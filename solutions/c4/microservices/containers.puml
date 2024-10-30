@@ -1,0 +1,43 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+LAYOUT_WITH_LEGEND()
+AddRelTag("rel", $lineStyle = DashedLine())
+
+title Система умного дома (диаграмма контейнеров)
+
+Person(customer, "Пользователь умного дома", "Пользователь умного дома с одним или несколькими приборами.")
+System_Boundary(smart_home, "Система управления умным домом") {
+    Container(frontend, "Мобильное приложение", "Javascript, React", "Позволяет пользователям управлять умными приборами, следить за состоянием, просматривать телеметрию.")
+    Container(gateway, "API Gateway", "Kusk Gateway", "Предоставляет единый вход API, проверка прав доступа, rate-limiting.")
+    Container(devicesBackend, "Сервис управления приборами", "Go", "Отвечает за регистрацию новых устройств, управление их состоянием (вкл/выкл) и отправку команд.")
+    ContainerDb(database, "База данных устройств", "PortgreSQL", "Хранит информацию о зарегистрированных пользователях и правах доступа.")
+
+    Container(devicesAdapter, "Сервисы адаптеры приборов", "Go", "Адаптирует различные протоколы взаимодействия с приборами партнеров к внутреннему API.")
+    Container(devicesTelemetry, "Сервисы телеметрии приборов", "Go", "Ответственен за приём, обработку и хранение данных телеметрии от устройств.")
+    Container(scenarios, "Сервисы пользовательских сценариев", "Go", "Инкапсулирует и хранил логику работы с пользовательскими сценариями.")
+    ContainerDb(databaseScenarios, "База данных сценариев", "PortgreSQL", "Хранит информацию о пользовательских сценариях.")
+
+    ContainerDb(bus, "Message Bus", "Kafka", "Транспортный слой взаимодействия сервисов.")
+}
+System_Ext(devices, "Приборы умного дома партнеров", "Приборы умного дома партнеров, поддерживающих взаимодействие по стандартным протоколам.")
+
+Rel(customer, frontend, "Управляет приборами умного дома, настраивает сценарии, собирает телеметрию", "HTTP", $tags="rel")
+Rel_R(frontend, gateway, "Отправляет запросы через", "HTTP", $tags="rel")
+
+Rel_D(gateway, devicesBackend, "Управляет приборами умного дома, настраивает сценарии, собирает телеметрию.", "HTTP", $tags="rel")
+Rel_D(gateway, devicesTelemetry, "Получает информацию по телеметрии приборов.", "HTTP", $tags="rel")
+Rel_D(gateway, scenarios, "Создает сценарии пользователя.", "HTTP", $tags="rel")
+Rel_D(scenarios, bus, "Отправляет команды на управление приборами.", "json", $tags="rel")
+
+Rel_L(devicesBackend, database, "Хранит состояние приборов, принадлежность приборов пользователям.", "SQL", $tags="rel")
+Rel_R(scenarios, databaseScenarios, "Хранит и получает сценарии пользователя.", "SQL", $tags="rel")
+
+Rel(devicesAdapter, bus, "Отправляет информацию с датчиков через унифицированный API.", "json", $tags="rel")
+Rel(devicesBackend, bus, "Отправляет команды на управление приборами.", "json", $tags="rel")
+Rel(devicesBackend, bus, "Отправляет события по изменению состояний приборов.", "json", $tags="rel")
+Rel(devicesTelemetry, bus, "Подписывается на события по изменению состояний приборов.", "json", $tags="rel")
+Rel_L(devicesAdapter, bus, "Подписывается на команды по управлению приборами.", "json", $tags="rel")
+
+Rel_R(devicesAdapter, devices, "Управление состоянием приборов.", "HTTP, MQTT", $tags="rel")
+Rel_L(devices, devicesAdapter, "Отправляет информацию с датчиков", "HTTP, MQTT", $tags="rel")
+@enduml

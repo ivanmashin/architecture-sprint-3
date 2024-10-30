@@ -1,0 +1,322 @@
+openapi: 3.0.0
+servers:
+  - url: http://smarthome/v2
+info:
+  description: 'Smarthome API gateway specification'
+  version: 1.0.0
+  title: Smart Home
+  contact:
+    email: ismashin@sberdevices.ru
+tags:
+  - name: homes
+    description: Operations on user homes
+  - name: devices
+    description: Operations on end devices
+  - name: states
+    description: Operations on device states
+  - name: scenarios
+    description: Operations about user scenarios on one or multiple devices
+paths:
+  /homes:
+    get:
+      tags:
+        - homes
+      summary: Get user homes
+      description: ''
+      operationId: getHomes
+      security:
+        - api_key: [ ]
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Home'
+    post:
+      tags:
+        - homes
+      summary: Create user home
+      description: ''
+      operationId: createHome
+      security:
+        - api_key: [ ]
+      requestBody:
+        $ref: '#/components/requestBodies/Home'
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid input
+  /devices:
+    post:
+      tags:
+        - devices
+      summary: Register device module in user account
+      description: ''
+      operationId: register
+      security:
+        - api_key: [ ]
+      responses:
+        '400':
+          description: Invalid input
+      requestBody:
+        $ref: '#/components/requestBodies/Device'
+      parameters: [ ]
+  /devices/{deviceId}:
+    get:
+      tags:
+        - devices
+      summary: Get connected device info
+      description: ''
+      operationId: getDevice
+      security:
+        - api_key: [ ]
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/requestBodies/Device'
+        '400':
+          description: Invalid ID supplied
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of device module
+          required: true
+          schema:
+            type: string
+    delete:
+      tags:
+        - devices
+      summary: Delete connected device
+      description: ''
+      operationId: deleteDevice
+      security:
+        - api_key: [ ]
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of device module
+          required: true
+          schema:
+            type: string
+  /device/{deviceId}/states:
+    get:
+      tags:
+        - states
+      summary: Get current device states
+      description: ''
+      operationId: getDeviceStates
+      security:
+        - api_key: [ ]
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/State'
+        '400':
+          description: Invalid ID supplied
+      parameters:
+        - name: deviceId
+          in: path
+          description: ID of device module
+          required: true
+          schema:
+            type: string
+    post:
+      tags:
+        - states
+      summary: Set device states
+      description: ''
+      operationId: setDeviceStates
+      security:
+        - api_key: [ ]
+      requestBody:
+        $ref: '#/components/requestBodies/States'
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid states supplied
+      parameters:
+        - name: deviceId
+          in: path
+  /scenarios:
+    get:
+      tags:
+        - scenarios
+      summary: Get user scenarios
+      description: ''
+      operationId: getScenarios
+      security:
+        - api_key: [ ]
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Scenario'
+    post:
+      tags:
+        - scenarios
+      summary: Create user scenario
+      description: ''
+      operationId: createScenario
+      security:
+        - api_key: [ ]
+      requestBody:
+        $ref: '#/components/requestBodies/Scenario'
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid scenario supplied
+  /scenarios/{scenarioId}:
+    delete:
+      tags:
+        - scenarios
+      summary: Delete user scenario
+      description: ''
+      operationId: deleteScenario
+      security:
+        - api_key: [ ]
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+  /scenarios/{scenarioId}/activate:
+    post:
+      tags:
+        - scenarios
+      summary: Activate user scenario
+      description: ''
+      operationId: activateScenario
+      security:
+        - api_key: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: boolean
+      responses:
+        '200':
+          description: successful operation
+        '400':
+          description: Invalid ID supplied
+      parameters:
+        - name: scenarioId
+          in: path
+          description: ID of scenario
+          required: true
+          schema:
+            type: string
+components:
+  schemas:
+    Home:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        devices:
+          type: array
+          items:
+            $ref: '#/components/schemas/Device'
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+            - light
+            - heater
+            - gates
+        online:
+          type: boolean
+        on_off:
+          type: boolean
+        states:
+          type: array
+          items:
+            type: string
+        home_id:
+          type: string
+    State:
+      type: object
+      properties:
+        device_id:
+          type: string
+        name:
+          type: string
+        value:
+          type: any
+    Scenario:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        activated:
+          type: boolean
+        trigger:
+          $ref: '#/components/schemas/State'
+        actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/State'
+  requestBodies:
+    Home:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Home'
+      description: Home DTO
+      required: true
+    Device:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Device'
+      description: Device DTO
+      required: true
+    States:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/State'
+    Scenario:
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Scenario'
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
+  links: { }
+  callbacks: { }
+security: [ ]

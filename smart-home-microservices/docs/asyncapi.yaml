@@ -1,0 +1,98 @@
+asyncapi: 3.0.0
+info:
+  title: Smart Home API
+  version: 1.0.0
+  description: API экосистемы умного дома, позволяющей управлять различными приборами для отопления, освещения, наблюдения, ворот и пр.
+defaultContentType: application/json
+channels:
+  stateMeasured:
+    address: event.states.measured
+    messages:
+      stateMeasured:
+        $ref: "#/components/messages/state"
+    description: The channel on which measured device states are produced and consumed.
+  stateSet:
+    address: cmd.states.set
+    messages:
+      stateSet:
+        $ref: "#/components/messages/state"
+    description: The channel on which desired device states are produced and consumed.
+
+operations:
+  receiveEventStateChanged:
+    action: receive
+    channel:
+      $ref: "#/channels/stateMeasured"
+    traits:
+      - $ref: "#/components/operationTraits/kafka"
+    messages:
+      - $ref: "#/channels/stateMeasured/messages/stateMeasured"
+  sendEventStateChanged:
+    action: send
+    channel:
+      $ref: "#/channels/stateMeasured"
+    traits:
+      - $ref: "#/components/operationTraits/kafka"
+    messages:
+      - $ref: "#/channels/stateMeasured/messages/stateMeasured"
+  setDeviceState:
+    action: send
+    channel:
+      $ref: "#/channels/stateSet"
+    traits:
+      - $ref: "#/components/operationTraits/kafka"
+    messages:
+      - $ref: "#/channels/stateSet/messages/stateSet"
+  receiveSetDeviceState:
+    action: receive
+    channel:
+      $ref: "#/channels/stateSet"
+    traits:
+      - $ref: "#/components/operationTraits/kafka"
+    messages:
+      - $ref: "#/channels/stateSet/messages/stateSet"
+
+components:
+  messages:
+    state:
+      name: state
+      title: Device state measured
+      contentType: application/json
+      payload:
+        $ref: "#/components/schemas/statePayload"
+  schemas:
+    statePayload:
+      type: object
+      required:
+        - device_id
+        - name
+        - value
+      properties:
+        device_id:
+          type: string
+        name:
+          type: string
+        value:
+          type: string
+          format: json
+  securitySchemes:
+    certs:
+      type: X509
+      description: Download the certificate files from service provider
+  messageTraits:
+    commonHeaders:
+      headers:
+        type: object
+        properties:
+          my-app-header:
+            type: integer
+            minimum: 0
+            maximum: 100
+  operationTraits:
+    kafka:
+      bindings:
+        kafka:
+          clientId:
+            type: string
+            enum:
+              - my-app-id
