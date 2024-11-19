@@ -7,6 +7,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/ismashin/architecture-sprint-3/smart-home-microservices/internal/devices/config"
+	"github.com/ismashin/architecture-sprint-3/smart-home-microservices/internal/devices/domain"
 )
 
 func NewAuthorization(cfg config.Config) func(next http.Handler) http.Handler {
@@ -31,7 +32,12 @@ func NewAuthorization(cfg config.Config) func(next http.Handler) http.Handler {
 				return
 			}
 
-			handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user-id", claims["id"].(string))))
+			handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), "user-id",
+				domain.ID(claims["id"].(string)))))
 		})
 	}
+}
+
+func MustExtractUserID(ctx context.Context) domain.ID {
+	return ctx.Value("user-id").(domain.ID)
 }

@@ -36,7 +36,7 @@ type handler struct {
 }
 
 func (h *handler) GetHomes(w http.ResponseWriter, r *http.Request) {
-	result, err := h.app.GetHomes.Handle(r.Context(), struct{}{})
+	result, err := h.app.GetHomes.Handle(r.Context(), middleware.MustExtractUserID(r.Context()), struct{}{})
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -53,7 +53,8 @@ func (h *handler) GetHomes(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) GetDevicesInHome(w http.ResponseWriter, r *http.Request) {
 	homeID := r.PathValue("homeID")
-	result, err := h.app.GetDevicesInHome.Handle(r.Context(), domain.ID(homeID))
+	result, err := h.app.GetDevicesInHome.Handle(r.Context(), middleware.MustExtractUserID(r.Context()),
+		domain.ID(homeID))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -70,13 +71,14 @@ func (h *handler) GetDevicesInHome(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) GetDevice(w http.ResponseWriter, r *http.Request) {
 	deviceID := r.PathValue("deviceID")
-	result, err := h.app.GetDeviceByID.Handle(r.Context(), domain.ID(deviceID))
+	result, err := h.app.GetDeviceByID.Handle(r.Context(), middleware.MustExtractUserID(r.Context()),
+		domain.ID(deviceID))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	err = json.NewEncoder(w).Encode(h.converter.DeviceFromDomainSingle(result))
+	err = json.NewEncoder(w).Encode(h.converter.DeviceFromDomain(result))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -94,7 +96,8 @@ func (h *handler) CreateDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.app.CreateDevice.Handle(r.Context(), h.converter.DeviceToDomain(domain.ID(homeID), request))
+	err = h.app.CreateDevice.Handle(r.Context(), middleware.MustExtractUserID(r.Context()),
+		h.converter.DeviceToDomain(domain.ID(homeID), request))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -112,7 +115,7 @@ func (h *handler) ToggleDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.app.ToggleDevice.Handle(r.Context(), usecase.ToggleCommand{
+	err = h.app.ToggleDevice.Handle(r.Context(), middleware.MustExtractUserID(r.Context()), usecase.ToggleCommand{
 		DeviceID: domain.ID(deviceID),
 		On:       *request,
 	})
@@ -133,7 +136,7 @@ func (h *handler) UpdateDevice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.app.UpdateDevice.Handle(r.Context(), usecase.UpdateDeviceCommand{
+	err = h.app.UpdateDevice.Handle(r.Context(), middleware.MustExtractUserID(r.Context()), usecase.UpdateDeviceCommand{
 		DeviceID:   domain.ID(deviceID),
 		DeviceName: request.Name,
 		On:         request.On,
@@ -148,7 +151,7 @@ func (h *handler) UpdateDevice(w http.ResponseWriter, r *http.Request) {
 
 func (h *handler) DeleteDevice(w http.ResponseWriter, r *http.Request) {
 	deviceID := r.PathValue("deviceID")
-	err := h.app.UpdateDevice.Handle(r.Context(), domain.ID(deviceID))
+	err := h.app.DeleteDevice.Handle(r.Context(), middleware.MustExtractUserID(r.Context()), domain.ID(deviceID))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

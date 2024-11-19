@@ -6,8 +6,8 @@ import (
 	"log/slog"
 
 	"github.com/IBM/sarama"
-	"github.com/ismashin/architecture-sprint-3/smart-home-microservices/internal/devices/domain"
 	"github.com/ismashin/architecture-sprint-3/smart-home-microservices/internal/telemetry/config"
+	"github.com/ismashin/architecture-sprint-3/smart-home-microservices/internal/telemetry/domain"
 	"github.com/ismashin/architecture-sprint-3/smart-home-microservices/internal/telemetry/usecase"
 )
 
@@ -68,7 +68,7 @@ func (h *handler) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama
 func (h *handler) handleDeviceDeleted(session sarama.ConsumerGroupSession, event *DeviceEvent) {
 	err := h.app.DeleteStates.Handle(session.Context(), domain.ID(event.DeviceID))
 	if err != nil {
-		slog.Error(err)
+		slog.Error(err.Error())
 		return
 	}
 }
