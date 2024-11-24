@@ -3,6 +3,6 @@ resource "helm_release" "kafka" {
     name = "kafka"
     chart = "kafka"
     version = "30.0.0"
-    namespace  = "kafka"
+    namespace  = "default"
     create_namespace = true
 }

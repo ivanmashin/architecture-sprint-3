@@ -110,3 +110,14 @@ volumeMounts: []
 nodeSelector: {}
 tolerations: []
 affinity: {}
+
+postgres:
+  host: "{{ .Values.postgres.host }}"
+  port: "{{ .Values.postgres.port }}"
+  user: "{{ .Values.postgres.user }}"
+  password: "{{ .Values.postgres.password }}"
+  database: "{{ .Values.postgres.database }}"
+
+kafka:
+  brokers:
+    - "{{ .Values.kafka.brokers | join ',' }}"

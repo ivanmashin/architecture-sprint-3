@@ -14,8 +14,8 @@ func DefaultConfig() Config {
 	return Config{
 		Secret:                     "secret",
 		HTTPServerAddress:          ":8080",
-		PostgresDNS:                "postgres://postgres:postgres@localhost:5432/sh_devices",
-		KafkaDNSs:                  []string{"localhost:9092"},
+		PostgresDNS:                "postgres://postgres:postgres@postgresql.default.svc.cluster.local:5432/sh_devices",
+		KafkaDNSs:                  []string{"kafka.default.svc.cluster.local"},
 		OutboxRelayPollingInterval: 1 * time.Minute,
 	}
 }
