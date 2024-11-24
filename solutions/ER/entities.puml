@@ -1,0 +1,81 @@
+@startuml
+hide empty members
+skinparam linetype ortho
+
+package UsersDB {
+    entity User {
+        ID UUID
+        Email Varchar
+    }
+}
+
+package DevicesDB {
+    entity Home {
+        ID UUID
+        Name Varchar
+        UserID UUID
+    }
+
+    User ||-|{ Home
+
+    entity Device {
+        ID UUID
+        Type DeviceType
+
+        Online Boolean
+        OnOff Boolean
+
+        UserID UUID
+        HomeID UUID
+    }
+
+    Home ||-o{ Device
+
+    enum DeviceType {
+        Thermostat
+        Light
+        Gate
+        CvCamera
+    }
+
+    Device ||-u-|| DeviceType
+
+    entity State {
+        Name Varchar
+        Value Bytea
+
+        DeviceID UUID
+    }
+
+    Device ||-d-|{ State
+}
+
+package ScenarioDB {
+    entity Scenario {
+        ID UUID
+        Activated Boolean
+        UserID UUID
+    }
+
+    entity ScenarioState {
+        Name Varchar
+        Value Bytea
+        DeviceID UUID
+        ScenarioID UUID
+    }
+
+    User ||-d-o{ Scenario
+    Scenario ||-r-|| ScenarioState: Trigger
+    Scenario ||-r-o{ ScenarioState: Action
+}
+
+package TelemetryDB {
+    entity TelemetryData {
+        DeviceID UUID
+        HistoryData JSON
+    }
+
+    Device ||-|| TelemetryData
+}
+
+@enduml

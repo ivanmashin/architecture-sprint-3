@@ -1,0 +1,15 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+LAYOUT_WITH_LEGEND()
+AddRelTag("rel", $lineStyle = DashedLine())
+
+title Система умного дома (диаграмма контекста)
+
+Person(customer, "Пользователь умного дома", "Пользователь умного дома с одним или несколькими приборами.")
+System(smart_home, "Система управления умным домом", "Позволяет управлять умными приборами.")
+System_Ext(devices, "Приборы умного дома партнеров", "Приборы умного дома партнеров, поддерживающих взаимодействие по стандартным протоколам.")
+
+Rel(customer, smart_home, "Управляет приборами умного дома, настраивает сценарии, собирает телеметрию", "HTTP", $tags="rel")
+Rel_L(devices, smart_home, "Отправляет информацию с датчиков", "HTTP, MQTT", $tags="rel")
+Rel_R(smart_home, devices, "Управление состоянием приборов", "HTTP, MQTT", $tags="rel")
+@enduml

@@ -1,0 +1,29 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+LAYOUT_WITH_LEGEND()
+AddRelTag("rel", $lineStyle = DashedLine())
+
+title Сервис управления приборами (диаграмма компонентов)
+
+Container(gateway, "API Gateway", "Kusk Gateway", "Предоставляет единый вход API, проверка прав доступа, rate-limiting.")
+
+Container_Boundary(devicesBackend, "Сервис управления приборами") {
+    Component(controller, "Контроллер приборов", "Rest", "Rest контроллер, реализующий API для управления приборами.")
+    Component(repository, "Репозиторий приборов", "Domain Repository", "Предоставляет доступ к хранению данных приборов.")
+    Component(consumer, "Подписчик шины данных", "Kafka", "Транспортный слой взаимодействия сервисов. Подписывается на команды.")
+    Component(publisher, "Отправитель событий", "Kafka", "Отправляет события об изменениях приборов на шину данных.")
+
+    Rel(controller, repository, "Взаимодействует с репозиторием.", "SQL", $tags="rel")
+    Rel(controller, publisher, "Отправляет события.", "SQL", $tags="rel")
+    Rel(consumer, repository, "Взаимодействует с репозиторием.", "SQL", $tags="rel")
+    Rel(consumer, publisher, "Отправляет события.", "SQL", $tags="rel")
+}
+
+ContainerDb(database, "База данных устройств", "PortgreSQL", "Хранит информацию о зарегистрированных пользователях и правах доступа.")
+ContainerDb(bus, "Message Bus", "Kafka", "Транспортный слой взаимодействия сервисов.")
+
+Rel(gateway, controller, "Вызывает методы API контроллера.", "HTTP", $tags="rel")
+Rel(repository, database, "Реализует интерфейс доступа к базе данных.", "SQL", $tags="rel")
+Rel(consumer, bus, "Подписывается на команды.", "json", $tags="rel")
+Rel(publisher, bus, "Отправляет события.", "json", $tags="rel")
+@enduml

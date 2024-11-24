@@ -1,0 +1,16 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+LAYOUT_WITH_LEGEND()
+
+AddRelTag("rel", $lineStyle = DashedLine())
+
+Person(user, "Пользователь умного дома", "Пользователь умного дома с одним или несколькими приборами отопления")
+Person(admin, "Cпециалист по подключению системы отопления", "Подключает систему отопления в доме к текущей версии системы")
+System(systemAlias, "Система умного дома", "Позволяет пользователям управлять умными приборами отопления")
+System_Ext(systemExtAlias, "Приборы умного дома", "Приборы системы отопления с датчиками, которые имеют возможность управления и отправки текущего состояния")
+
+Rel_R(user, systemAlias, "Управляет приборами отопления, получает информацию о текущих значениях датчиков", "HTTP", $tags="rel"))
+Rel_R(admin, systemAlias, "Управляет приборами отопления, получает информацию о текущих значениях датчиков", "HTTP", $tags="rel"))
+Rel_D(user, admin, "", $tags="rel")
+Rel_R(systemAlias, systemExtAlias, "Получает информацию с датчиков, контролирует приборы", $tags="rel")
+@enduml
